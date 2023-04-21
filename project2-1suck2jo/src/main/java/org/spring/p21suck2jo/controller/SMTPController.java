@@ -23,10 +23,8 @@ public class SMTPController {
 
     @PostMapping("/smtppwSearch")
     public ResponseDto<?> find(@RequestBody PoliceDto dto) {
-
         if(!policeRepository.existsByPoliceNumber(dto.getPoliceNumber()) || !Pattern.matches("^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", dto.getEmail())) {
             Map<String, String> validResult = new HashMap<>();
-
             if(!policeRepository.existsByPoliceNumber(dto.getPoliceNumber())) {
                 validResult.put("policeNumber", "존재하지 않는 사원번호입니다.");
             }
@@ -38,6 +36,4 @@ public class SMTPController {
         PoliceLoginService.sendTmpPwd(dto);
         return new ResponseDto<Integer>(HttpStatus.OK.value(), 1);
     }
-
-
 }

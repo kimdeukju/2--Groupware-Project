@@ -34,8 +34,6 @@ public class CustomAuthFailureHandler extends SimpleUrlAuthenticationFailureHand
         }
         errorMessage = URLEncoder.encode(errorMessage, "UTF-8");
         setDefaultFailureUrl("/login?error=true&exception="+errorMessage);
-//        setDefaultFailureUrl("/login?"+errorMessage);
         super.onAuthenticationFailure(request, response, exception);
     }
-
 }

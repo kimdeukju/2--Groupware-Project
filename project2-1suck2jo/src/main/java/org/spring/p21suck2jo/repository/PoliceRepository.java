@@ -18,7 +18,6 @@ public interface PoliceRepository extends JpaRepository<PoliceEntity,Long> {
     Optional<PoliceEntity> findByPoliceNumber(int policeNumber);
     Optional<PoliceEntity> findByEmailAndPoliceNumber(String email,int policeNumber);
 
-
     boolean existsByEmail(String email);
     boolean existsByPoliceNumber(int policeNumber);
     Optional<PoliceEntity> findByEmail(String email);

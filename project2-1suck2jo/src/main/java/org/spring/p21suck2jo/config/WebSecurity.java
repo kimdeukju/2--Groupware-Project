@@ -17,13 +17,10 @@ public class WebSecurity {
 
     private final UserDetailSecurity userDetailSecurity;
     private final AuthenticationFailureHandler customFailHandler;
-//    private final CustomOAuth2UserService customOAuth2UserService;
     @Bean
     public SecurityFilterChain fileChain(HttpSecurity http) throws Exception{
         http.csrf().disable(); //페이지보안설정 Exception 예외처리
         http.userDetailsService(userDetailSecurity);
-
-//        Control when the session is created or not / ifRequired: A session will be created only if required.
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
         //권한
@@ -32,9 +29,6 @@ public class WebSecurity {
                 .antMatchers("/police/**","/event/**","/index").authenticated()
                 .antMatchers("/index","/police/**","/event/**").hasAnyRole("ADMIN","MEMBER")
                 .antMatchers("/admin/**").hasRole("ADMIN");
-
-
-
         http.formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
@@ -45,8 +39,6 @@ public class WebSecurity {
                 .and()
                 .oauth2Login()
                 .loginPage("/login")
-//                .userInfoEndpoint()			// 로그인 성공 후 사용자정보를 가져온다
-//                .userService(customOAuth2UserService)	//사용자정보를 처리할 때 사용한다
                 .and()
                 .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))

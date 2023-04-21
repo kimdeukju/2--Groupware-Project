@@ -58,9 +58,7 @@ public class LoginController {
 
         return "index";
     }
-
-
-    @GetMapping("/login")                               //로그인 오류
+    @GetMapping("/login")         //로그인 오류
     public String login(@RequestParam(value = "error" ,required = false ) String error,
                         @RequestParam(value = "exception" ,required = false)String exception,
                         Model model) {
@@ -72,7 +70,6 @@ public class LoginController {
     public String idsearch(){
         return "login/idSearch";
     }
-
     @PostMapping("/idSearch")
     public String policenumber(@RequestParam int policeNumber,
                                Model model){
@@ -90,6 +87,8 @@ public class LoginController {
     public String pwsearchapi(){
         return "login/smtppwSearch";
     }
+
+
     //비밀번호찾기 고전방법
 //    @GetMapping("/pwSearch")
 //    public String pwsearch(){

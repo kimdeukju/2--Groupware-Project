@@ -9,16 +9,12 @@
 </head>
 
 <body>
-  <!-- #003478 색상통일 -->
   <div class="login-container">
     <div class="login">
       <div class="header-home">
-
          <a href="#"><img th:src="@{/img/logo.png}" alt=""></h1></a>
-       <!-- <a href="#"><img src="/static/css/img/logo.png" alt=""></h1></a> -->
       </div>
-      <div class="login-content">
-        <form th:action="@{/pwSearch}" method="post" >
+      <div class="login-content"><form th:action="@{/pwSearch}" method="post" >
           <ul>
             <li><input type="text" name="email" placeholder="이메일입력"></li>
           </ul>
@@ -26,17 +22,15 @@
             <li><input type="number" name="policeNumber" placeholder="사원번호입력"></li>
           </ul>
           <div class="button">
-            <button class="btn" type="submit">
-              <span>찾기</span>
+            <button class="btn" type="submit"><span>찾기</span>
             </button>
           </div>
         </form>
       </div>
       <ul class="login-list">
         <li><a target="_blank" href="/idSearch">아이디찾기</a></li>
-<!--        <li><p class="before"></p><a target="_blank" href="/join">회원가입</a></li>-->
       </ul>
     </div>
-    </div>
-  </body>
-  </html>
+  </div>
+</body>
+</html>

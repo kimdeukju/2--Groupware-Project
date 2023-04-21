@@ -6,10 +6,8 @@ let index_user = {
 	},
 	find: function() {
 		LoadingWithMask();
-		
 		let data = {
-//		username: $("#username").val(),
-//        email: $("#email").val()
+
 			policeNumber: $("#policeNumber").val(),
 			email: $("#email").val()	
 		};
@@ -74,7 +72,6 @@ function LoadingWithMask() {
     $('body').append(spinner);
     $('#spinner').show();
 }
-
 function closeLoadingWithMask() {
 	$('#mask, #spinner').hide();
 	$('#mask, #spinner').empty();

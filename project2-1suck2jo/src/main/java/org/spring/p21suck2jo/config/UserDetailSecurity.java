@@ -35,10 +35,8 @@ public class UserDetailSecurity implements UserDetailsService {
                 .roles(policeEntity.getRole().toString())
                 .build();
 }
-
     @Bean  // 비밀번호 암호화
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-
 }
