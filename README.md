@@ -205,7 +205,57 @@
    
 <details><summary>Oauth2</summary><blockquote>
 
+ <details><summary>Yml</summary><blockquote>
 
+```
+spring:
+  security:
+    oauth2.client:
+      registration:
+        google:
+          clientId:  #본인꺼등록
+          clientSecret:    #본인꺼등록
+          scope: email,profile
+
+          # 네이버는 Spring Security를 공식 지원하지 않기 때문에 Provider 값들을 수동으로 입력한다.
+        naver:
+          client-id:  #본인꺼등록
+          client-secret:   #본인꺼등록
+          redirect-uri: "http://localhost:8099/login/oauth2/code/naver"
+          authorization-grant-type: authorization_code
+          scope:
+            - email
+            - nickname
+          client-name: Naver
+        kakao:
+          client-id:  #본인꺼등록
+          redirect-uri: "http://localhost:8099/login/oauth2/code/kakao"
+          client-authentication-method: POST
+          authorization-grant-type: authorization_code
+          scope: profile_nickname, account_email #동의 항목
+          client-name: Kakao
+
+  #이렇게 꼭 써야한다
+      provider:
+        naver:
+          authorization-uri: https://nid.naver.com/oauth2.0/authorize
+          token-uri: https://nid.naver.com/oauth2.0/token
+          user-info-uri: https://openapi.naver.com/v1/nid/me
+          user-name-attribute: response
+  
+        kakao:
+          authorization-uri: https://kauth.kakao.com/oauth/authorize
+          token-uri: https://kauth.kakao.com/oauth/token
+          user-info-uri: https://kapi.kakao.com/v2/user/me
+          user-name-attribute: id
+```
+</blockquote></details>
+ 
+ <details><summary>View</summary><blockquote>
+  
+![image](https://user-images.githubusercontent.com/106312692/233553818-c7ed352c-f34b-4e8b-9fc9-8b1e93706822.png)
+
+</blockquote></details>
 </blockquote></details>
    
    
