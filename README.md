@@ -257,7 +257,7 @@ spring:
    
 <details><summary>Email찾기 & Password찾기(SMTP 이용하여 Mail로 임시비밀번호받기)</summary><blockquote>
 
-<details><summary>Email</summary><blockquote>
+<details><summary>Email 찾기</summary><blockquote>
 
  <details><summary>Controller</summary><blockquote>
 
