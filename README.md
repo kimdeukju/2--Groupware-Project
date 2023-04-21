@@ -10,7 +10,7 @@
 ##  참여 인원
 - 팀장 : 강창신 - 결재문서 CRUD , 근태 기능 , naver-API
 - 팀원1 : 이지창 - 회원CRUD , 부서CRUD , FullCalendar-API , AWS EC2 배포
-- 팀원2 : 김득주 - 로그인&Spring Security , Open API(Weather,Bus) 
+- 팀원2 : 김득주 - 로그인&Spring Security , Open API(Weather,Bus) , Oauth2
 - 팀원3 : 장효선 - 게시판CRUD , 댓글CRUD , 전체적인 디자인 수정
 - 팀원4 : 허인경 - 사건CRU , KakaoMap-API , left-Menubar 제작
 
@@ -95,3 +95,126 @@
 }
 ```
 </details>
+ ===================================================================================================================================================
+ 
+  <details><summary>Login</summary><blockquote>
+  
+   
+   
+   
+  <details><summary>Login Main</summary><blockquote>
+  
+ <details><summary>Controller</summary><blockquote>
+  
+ ```
+@GetMapping({"/",""})
+    public String basic(){
+        return "login/login";
+    }
+ ```
+  </blockquote></details>
+
+<details><summary>Login Fail</summary><blockquote>
+  
+<details><summary>CustomAuthFailureHandler</summary><blockquote>
+  
+```
+      @Override
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+                                        AuthenticationException exception) throws IOException, ServletException {
+        String errorMessage;
+        if (exception instanceof BadCredentialsException){
+            errorMessage ="아이디 또는 비밀번호가 맞지 않습니다. 다시 확인해주세요.";
+        }else if (exception instanceof InternalAuthenticationServiceException) {
+            errorMessage = "내부적으로 발생한 시스템 문제로 인해 요청을 처리할 수없습니다 관리자에게 문의해주세요.";
+        }else if (exception instanceof UsernameNotFoundException) {
+            errorMessage = "계정이 존재하지 않습니다. 회원가입 진행 후 로그인 해주세요.";
+        }else if (exception instanceof AuthenticationCredentialsNotFoundException) {
+            errorMessage = "인증 요청이 거부되었습니다. 관리자에게 문의하세요.";
+        }else{
+            errorMessage="알 수 없는 이유로 로그인에 실패하였습니다 관리자에게 문의하세요";
+        }
+        errorMessage = URLEncoder.encode(errorMessage, "UTF-8");
+        setDefaultFailureUrl("/login?error=true&exception="+errorMessage);
+        super.onAuthenticationFailure(request, response, exception);
+    }
+}
+```
+</blockquote></details>
+     
+<details><summary>Controller</summary><blockquote>
+  
+```
+@GetMapping("/login")         //로그인 오류
+    public String login(@RequestParam(value = "error" ,required = false ) String error,
+                        @RequestParam(value = "exception" ,required = false)String exception,
+                        Model model) {
+        model.addAttribute("error",error);
+        model.addAttribute("exception",exception);
+        return "login/login";
+    }
+```
+</blockquote></details>
+</blockquote></details>
+
+<details><summary>View</summary><blockquote>
+
+<details><summary>Html</summary><blockquote>
+
+ ```
+ <body>
+  <div class="login-container">
+    <div class="login">
+      <div class="header-home">
+           <a href="#"><img th:src="@{/img/logo.png}" alt=""></a>
+      </div>
+      <div class="login-content">
+        <form th:action="@{/login}" method="post" id="loginForm">
+          <ul>
+            <li><input type="text" name="email" id="email" placeholder="아이디"></li>
+            <li><input type="password" name="password" id="password" placeholder="비밀번호"></li>
+          </ul>
+          <span th:if="error"><p id="valid" style="color:#ffffff; font-size:12px;" th:text="${exception}"></p></span>
+          <div class="button">
+            <button class="btn" type="submit">
+              <span>로그인</span>
+            </button>
+          </div>
+        </form>
+      </div>
+      <ul class="login-list">
+          <li><a target="_blank" href="/idSearch">아이디찾기</a></li>
+          <li><p class="before"></p><a target="_blank" href="/pwSearch">비밀번호찾기</a></li>
+      </ul>
+      <div class="oauth">
+        <a th:href="@{/oauth2/authorization/google}"><img th:src="@{/img/google.png}"></a>
+        <a th:href="@{/oauth2/authorization/naver}"><img th:src="@{/img/naver1.png}"></a>
+        <a th:href="@{/oauth2/authorization/kakao}"><img th:src="@{/img/kakao.jpg}"></a>
+      </div>
+    </div>
+  </div>
+</body>
+ ```
+</blockquote></details>
+ 
+ ![image](https://user-images.githubusercontent.com/106312692/233552605-7dbb340c-cbb9-47c5-9752-a18628743e9c.png)
+</blockquote></details>
+</blockquote></details>
+   
+=================================================================================================================================================
+   
+<details><summary>Oauth2</summary><blockquote>
+
+
+</blockquote></details>
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+  </blockquote></details>
