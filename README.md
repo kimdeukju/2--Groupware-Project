@@ -255,6 +255,112 @@ spring:
 </blockquote></details>
 </blockquote></details>
    
+<details><summary>Email찾기 & Password찾기(SMTP 이용하여 임시비밀번호받기)</summary><blockquote>
+
+<details><summary>Email</summary><blockquote>
+
+ <details><summary>Controller</summary><blockquote>
+
+```
+@GetMapping("/idSearch")
+    public String idsearch(){
+        return "login/idSearch";
+    }
+    @PostMapping("/idSearch")
+    public String policenumber(@RequestParam int policeNumber,
+                               Model model){
+        PoliceDto policeDto=policeLoginService.policeid(policeNumber);
+        model.addAttribute("teamDto",policeDto);
+        if(policeDto==null){
+            return "login/error";
+        }else {
+            System.out.println("조회성공");
+            return "login/idSearch1";
+        }
+    }
+```
+</blockquote></details>
+
+<details><summary>Service</summary><blockquote>
+
+```
+public PoliceDto policeid(int policeNumber) {
+        Optional<PoliceEntity> policeEntity = policeRepository.findByPoliceNumber(policeNumber);
+        if (!policeEntity.isPresent()) {
+            return null;
+        }
+        PoliceDto teamDto = PoliceDto.teamDtoid(policeEntity.get());
+        return teamDto;
+    }
+```
+</blockquote></details>
+ 
+ <details><summary>View</summary><blockquote>
+  
+  <details><summary>Html</summary><blockquote>
+
+### 사원번호 입력 후 DB에 존재하면 불러오기 html
+```
+<body>
+  <div class="login-container">
+    <div class="login">
+      <div class="header-home">
+         <a href="#"><img th:src="@{/img/logo.png}" alt=""></h1></a>
+      </div>
+      <div class="login-content">
+        <form th:action="@{/idSearch}" method="post" id="idSearch">
+          <ul><li><input type="number" name="policeNumber" id="policeNumber" placeholder="사원번호입력"></li></ul>
+          <div class="button">
+            <button class="btn" type="submit"><span>찾기</span></button>
+          </div>
+        </form>
+      </div>
+      <ul class="login-list">
+        <li><p class="before"></p><a target="_blank" href="/pwSearch">비밀번호찾기</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
+```
+   
+### 사원번호로 호출한 아이디 View Html
+   
+```
+<body>
+  <div class="login-container">
+    <div class="login">
+      <div class="header-home">
+         <a href="#"><img th:src="@{/img/logo.png}" alt=""></h1></a>
+      </div>
+      <div class="login-content">
+        <ul><li><input type="text" name="email" id="email" th:value="${teamDto.email}" readonly></li></ul>
+        <ul><li><input type="number" name="policeNumber" id="policeNumber"  th:value="${teamDto.policeNumber}" readonly></li></ul>
+      </div>
+      <ul class="login-list"><li><p class="before"></p><a target="_blank" href="/pwSearch">비밀번호찾기</a></li></ul>
+    </div>
+  </div>
+</body>
+```
+</blockquote></details>
+ 
+ ### 사원번호 입력 후 DB에 존재하면 불러오기 
+![image](https://user-images.githubusercontent.com/106312692/233556321-681dc642-397c-4438-8411-1344fe9dcb23.png)
+
+ ### 불러오기완료
+ ![image](https://user-images.githubusercontent.com/106312692/233556641-e26aad54-8bc1-4ae6-8ef2-1338c8a0f6f7.png)
+
+</blockquote></details>
+</blockquote></details>
+
+ <details><summary>비밀번호찾기(SMTP이용하여 Mail로 임시 비밀번호 받기)</summary><blockquote>
+
+</blockquote></details>
+ 
+ 
+ 
+ 
+ 
+</blockquote></details>
    
    
    
@@ -262,6 +368,4 @@ spring:
    
    
    
-   
-   
-  </blockquote></details>
+</blockquote></details>
