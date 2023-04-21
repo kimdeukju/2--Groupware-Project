@@ -255,7 +255,7 @@ spring:
 </blockquote></details>
 </blockquote></details>
    
-<details><summary>Email찾기 & Password찾기(SMTP 이용하여 임시비밀번호받기)</summary><blockquote>
+<details><summary>Email찾기 & Password찾기(SMTP 이용하여 Mail로 임시비밀번호받기)</summary><blockquote>
 
 <details><summary>Email</summary><blockquote>
 
@@ -354,11 +354,211 @@ public PoliceDto policeid(int policeNumber) {
 
  <details><summary>비밀번호찾기(SMTP이용하여 Mail로 임시 비밀번호 받기)</summary><blockquote>
 
+  <details><summary>Controller</summary><blockquote>
+
+   ### Password Search
+```
+   @GetMapping("/pwSearch")
+    public String pwsearchapi(){
+        return "login/smtppwSearch";
+    }
+```
+   
+### SMTP
+   
+```
+  @PostMapping("/smtppwSearch")
+    public ResponseDto<?> find(@RequestBody PoliceDto dto) {
+        if(!policeRepository.existsByPoliceNumber(dto.getPoliceNumber()) || !Pattern.matches("^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", dto.getEmail())) {
+            Map<String, String> validResult = new HashMap<>();
+            if(!policeRepository.existsByPoliceNumber(dto.getPoliceNumber())) {
+                validResult.put("policeNumber", "존재하지 않는 사원번호입니다.");
+            }
+            if(!Pattern.matches("^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$", dto.getEmail())) {
+                validResult.put("email", "올바르지 않은 이메일 형식입니다.");
+            }
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), validResult);
+        }
+        PoliceLoginService.sendTmpPwd(dto);
+        return new ResponseDto<Integer>(HttpStatus.OK.value(), 1);
+    }
+}
+```
 </blockquote></details>
- 
- 
- 
- 
+
+<details><summary>Service</summary><blockquote>
+
+```
+//SMTP 메일로 임시비밀번호 받기
+    @Value("${spring.mail.username}")
+    private String sendFrom;
+    private final JavaMailSender javaMailSender;
+    private final BCryptPasswordEncoder encoder;
+    @Transactional
+    public void sendTmpPwd(PoliceDto dto) {    //임시비밀번호
+        char[] charSet = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+        String tmpPwd = "";
+        // 문자 배열 길이의 값을 랜덤으로 10개를 뽑아 구문을 작성함
+        int idx = 0;
+        for (int i = 0; i < 10; i++) {
+            idx = (int) (charSet.length * Math.random());
+            tmpPwd += charSet[idx];
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(dto.getEmail());
+            message.setFrom(sendFrom);
+            message.setSubject("1석2조 임시 비밀번호 안내 이메일입니다.");
+            message.setText("안녕하세요.\n"
+                    + "1석2조 임시비밀번호 안내 관련 이메일 입니다.\n"
+                    + "임시 비밀번호를 발급하오니 사이트에 접속하셔서 로그인 하신 후\n"
+                    + "반드시 비밀번호를 변경해주시기 바랍니다.\n\n"
+                    + "임시 비밀번호 : " + tmpPwd);
+            javaMailSender.send(message);
+        } catch (MailParseException e) {
+            e.printStackTrace();
+        } catch (MailAuthenticationException e) {
+            e.printStackTrace();
+        } catch (MailSendException e) {
+            e.printStackTrace();
+        } catch (MailException e) {
+            e.printStackTrace();
+        }
+        PoliceEntity user = policeRepository.findByPoliceNumber(dto.getPoliceNumber()).orElseThrow(() -> {
+            return new IllegalArgumentException("임시 비밀번호 변경 실패: 사용자 사원번호를 찾을 수 없습니다.");
+        });
+        user.setPassword(encoder.encode(tmpPwd));
+    }
+
+```
+</blockquote></details>
+  
+<details><summary>View</summary><blockquote>
+
+<details><summary>Html</summary><blockquote>
+
+```
+<body>
+  <div class="login-container">
+    <div class="login">
+      <div class="header-home">
+         <a href="#"><img th:src="@{/img/logo.png}" alt=""></h1></a>
+      </div>
+      <div class="login-content">
+          <ul>
+            <li><label for="email"></label><input type="text" id="email" name="email" placeholder="이메일입력"></li>
+          </ul>
+          <ul>
+            <li><label for="policeNumber"></label><input type="number" id="policeNumber" name="policeNumber" placeholder="사원번호입력"></li>
+          </ul>
+          <div class="button">
+            <button class="btn" type="button" id="btn-find"><span>찾기</span></button>
+          </div>
+      </div>
+      <ul class="login-list"><li><a target="_blank" href="/idSearch">아이디찾기</a></li></ul>
+    </div>
+  </div>
+</body>
+```
+</blockquote></details>
+
+<details><summary>Js(ajax)</summary><blockquote>
+
+```
+let index_user = {
+	init: function() {
+		$("#btn-find").on("click", () => {
+			this.find();
+		});
+	},
+	find: function() {
+		LoadingWithMask();
+		let data = {
+		
+			policeNumber: $("#policeNumber").val(),
+			email: $("#email").val()	
+		};
+		
+		$.ajax({
+			type: "POST",
+			url: "/smtppwSearch",
+			data: JSON.stringify(data),
+			contentType: "application/json; charset=utf-8"
+		}).done(function(resp) {
+			if (resp.status == 400) {
+				if (resp.data.hasOwnProperty('email')) {
+					$('#email').text(resp.data.valid_email);
+					$('#email').focus();
+				} else {
+					$('#email').text('');
+				}
+				
+				if (resp.data.hasOwnProperty('policeNumber')) {
+					$('#policeNumber').text(resp.data.valid_username);
+					$('#policeNumber').focus();
+				} else {
+					$('#policeNumber').text('');
+				}
+				
+				closeLoadingWithMask();
+			} else {				
+				alert("임시 비밀번호가 발송되었습니다.");
+				location.href = "/login";
+			}
+		}).fail(function(error) {
+			console.log(error);
+		});
+	}
+}
+index_user.init();
+
+function LoadingWithMask() {
+    //화면의 높이와 너비를 구합니다.
+    var maskHeight = $(document).height();
+    var maskWidth  = window.document.body.clientWidth;
+
+    //화면에 출력할 마스크를 설정해줍니다.
+    var mask    = "<div id='mask' style='position:absolute; z-index:9000; background-color:#000000; display:none; left:0; top:0;'></div>";
+    var spinner = "<div id='spinner' style='position: absolute; top: 45%; left: 50%; margin: -16px 0 0 -16px; display: none; color: #4dff93;' class='spinner-border'></div>";
+
+    //화면에 레이어 추가
+    $('body')
+        .append(mask)
+
+    //마스크의 높이와 너비를 화면 것으로 만들어 전체 화면을 채웁니다.
+    $('#mask').css({
+            'width' : maskWidth,
+            'height': maskHeight,
+            'opacity' : '0.3'
+    });
+
+    //마스크 표시
+    $('#mask').show();
+
+    //로딩중 이미지 표시
+    $('body').append(spinner);
+    $('#spinner').show();
+}
+function closeLoadingWithMask() {
+	$('#mask, #spinner').hide();
+	$('#mask, #spinner').empty();
+}
+```
+</blockquote></details>
+
+### Email과 사원번호 입력
+![image](https://user-images.githubusercontent.com/106312692/233560742-a04cd763-1613-41dd-8e20-c0f695e4d416.png)
+
+### 전송성공
+![image](https://user-images.githubusercontent.com/106312692/233561027-7b2660b3-a2f3-4a62-a2e7-d29a661a41c0.png)
+
+### 임시 비밀번호 발급 완료
+![image](https://user-images.githubusercontent.com/106312692/233561390-71fddaee-0eb1-49e2-ab5b-2d02c365e515.png)
+
+</blockquote></details>
+
+</blockquote></details>
  
 </blockquote></details>
    
