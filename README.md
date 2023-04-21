@@ -31,3 +31,67 @@
 - 경찰의 업무는 사건 사고를 중심으로 업무가 진행됨
 
 <hr>
+
+## Code
+
+<details>
+<summary>Security</summary>
+ 
+ ### WebSecurity
+ 
+```
+ @Bean
+    public SecurityFilterChain fileChain(HttpSecurity http) throws Exception{
+        http.csrf().disable(); //페이지보안설정 Exception 예외처리
+        http.userDetailsService(userDetailSecurity);
+        http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+        //권한
+        http.authorizeHttpRequests()
+                .antMatchers("/login").permitAll()
+                .antMatchers("/police/**","/event/**","/index").authenticated()
+                .antMatchers("/index","/police/**","/event/**").hasAnyRole("ADMIN","MEMBER")
+                .antMatchers("/admin/**").hasRole("ADMIN");
+        http.formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/index")
+                .failureHandler(customFailHandler)
+                .and()
+                .oauth2Login()
+                .loginPage("/login")
+                .and()
+                .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/");
+        return http.build();
+    }
+}
+```
+ 
+### UserDetailSecurity
+ 
+```
+@Override           //loadUserByUsername메서드는 "이런 정보가 들어왔는데 얘 혹시 회원이야?" 라고 묻는 메서드이다.
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<PoliceEntity> police = policeRepository.findByEmail(email);
+
+        if (!police.isPresent()){
+            throw new UsernameNotFoundException("사용자가 없습니다.");
+    }
+        PoliceEntity policeEntity=police.get();
+        return User.builder()    //스프링관리자 User 역할을 빌더로 간단하게만듬
+                .username(policeEntity.getEmail())
+                .password(policeEntity.getPassword())
+                .roles(policeEntity.getRole().toString())
+                .build();
+}
+    @Bean  // 비밀번호 암호화
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+}
+```
+</details>
