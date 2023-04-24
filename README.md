@@ -562,10 +562,458 @@ function closeLoadingWithMask() {
  
 </blockquote></details>
    
-   
-   
-   
-   
-   
-   
 </blockquote></details>
+
+<details><summary>Open API</summary><blockquote>
+
+<details><summary>Weather</summary><blockquote>
+
+<details><summary>Controller</summary><blockquote>
+
+```
+@GetMapping("/weather")
+    public String weather(){
+        return "openApi/api/weather/index";
+    }
+```
+
+</blockquote></details>
+
+<details><summary>View</summary><blockquote>
+
+<details><summary>Html</summary><blockquote>
+
+```
+<div class="weather-con">
+  <div class="city-search">
+    <select name="search" id="search">
+      <option value="Seoul">서울</option>
+      <option value="Busan">부산</option>
+      <option value="ChunCheon">춘천</option>
+    </select>
+    <input type="button" onclick="weatherSearch()" value="검색">
+  </div>
+  <div class="weather-list">
+    <div
+      style="background-color : rgb(101, 178, 255); box-sizing: border-box; padding : 10px;color : #fff; width:300px; height : 150px">
+      <div style="float : left;">
+        <div class="weather_icon con"></div>
+      </div><br>
+      <div style="float : right; margin : -5px 0px 0px 60px; font-size : 11pt">
+        <div class="temp_min con"></div>
+        <div class="temp_max con"></div>
+        <div class="humidity con"></div>
+        <div class="wind con"></div>
+        <div class="cloud con"></div>
+      </div>
+      <div style="float : right; margin-top : -45px;">
+        <div class="current_temp con" style="font-size : 50pt"></div>
+        <div class="weather_description con" style="font-size : 20pt"></div>
+        <div class="city con" style="font-size : 13pt"></div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+</blockquote></details>
+
+<details><summary>Js(ajax)</summary><blockquote>
+
+```
+const search = document.querySelector('#search');
+const weatherList = document.querySelector('.weather-list');
+const weatherListCon = document.querySelectorAll('.weather-list .con');
+
+function weatherSearch(){
+   weatherFn(search.value);
+}
+
+
+function weatherFn(cityVal){
+  
+  weatherListCon.forEach(el => {
+    el.innerText = "";
+  });
+
+  // 날씨 api - fontawesome 아이콘
+  let weatherIcon = {
+    '01': 'fas fa-sun',
+    '02': 'fas fa-cloud-sun',
+    '03': 'fas fa-cloud',
+    '04': 'fas fa-cloud-meatball',
+    '09': 'fas fa-cloud-sun-rain',
+    '10': 'fas fa-cloud-showers-heavy',
+    '11': 'fas fa-poo-storm',
+    '13': 'far fa-snowflake',
+    '50': 'fas fa-smog'
+  };
+
+
+
+
+  let appUrl=`https://api.openweathermap.org/data/2.5/weather?q=${cityVal}&appid=d120b9753476cf52cef225aa91adca64`;
+  // let appUrl="https://api.openweathermap.org/data/2.5/weather?q="+cityVal+"&appid=d120b9753476cf52cef225aa91adca64";
+  $.ajax({
+    url: appUrl,
+    dataType: "json",
+    type: "GET",
+    success:function(result){
+      console.log(result+" <-rs"+(typeof result));
+      let lon=result.coord.lon; // 경도
+      let lat=result.coord.lat; //위도
+
+    
+      console.log(lon, lat);
+
+      
+      let $Icon = (result.weather[0].icon).substr(0, 2);
+      let $weather_description = result.weather[0].main;    //현재 날씨 상태(맑다)
+      console.log(result.weather[0].description+"<<현재날시 세세한 ")
+      let $Temp = Math.floor(result.main.temp - 273.15) + 'º';
+                                      //절대영도 -273.15 -> 섭씨 0
+      let $humidity = '습도&nbsp;&nbsp;&nbsp;&nbsp;' + result.main.humidity + ' %';
+      let $wind = '바람&nbsp;&nbsp;&nbsp;&nbsp;' + result.wind.speed + ' m/s';
+      let $city = cityVal;
+      let $cloud = '구름&nbsp;&nbsp;&nbsp;&nbsp;' + result.clouds.all + "%";
+      let $temp_min = '최저 온도&nbsp;&nbsp;&nbsp;&nbsp;' + Math.floor(result.main.temp_min - 273.15) + 'º';
+      let $temp_max = '최고 온도&nbsp;&nbsp;&nbsp;&nbsp;' + Math.floor(result.main.temp_max - 273.15) + 'º';
+
+      $('.weather_icon').append('<i class="' + weatherIcon[$Icon] +
+        ' fa-5x" style="height : 150px; width : 150px;"></i>');
+      $('.weather_description').prepend($weather_description);
+      $('.current_temp').prepend($Temp);
+      $('.humidity').prepend($humidity);
+      $('.wind').prepend($wind);
+      $('.city').append($city);
+      $('.cloud').append($cloud);
+      $('.temp_min').append($temp_min);
+      $('.temp_max').append($temp_max);
+
+
+      mapFn(lon,lat);
+
+    }
+  })
+}
+
+(
+  ()=>{
+    weatherFn("seoul")
+  }
+)();
+
+function mapFn(lon,lat){
+
+//   console.log(lon, lat);
+  //카카오 지도 api
+  var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+  mapOption = { 
+      center: new kakao.maps.LatLng(lat,lon), // 지도의 중심좌표
+      level: 3 // 지도의 확대 레벨
+  };
+
+var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+// 마커가 표시될 위치입니다 
+var markerPosition  = new kakao.maps.LatLng(lat,lon); 
+
+// 마커를 생성합니다
+var marker = new kakao.maps.Marker({
+  position: markerPosition
+});
+
+// 마커가 지도 위에 표시되도록 설정합니다
+marker.setMap(map);
+
+// 아래 코드는 지도 위의 마커를 제거하는 코드입니다
+// marker.setMap(null);    
+}
+```
+
+</blockquote></details>
+
+
+![image](https://user-images.githubusercontent.com/106312692/233930849-4c388c6c-d04d-48a9-b835-03b1527ade2a.png)
+
+</blockquote></details>
+
+</blockquote></details>
+
+<details><summary>Bus</summary><blockquote>
+
+<details><summary>Controller</summary><blockquote>
+
+```
+@GetMapping("/bus")
+    public String bus(){
+        return "openApi/api/bus/index";
+    }
+
+@GetMapping("/busList")
+    public Map<String,String> busList(@RequestParam(required = false)
+                                          String strSrch) throws IOException{
+        String busList=ApiExplorer.getBusList(strSrch);
+        System.out.println(busList+"busList");
+        Map<String,String> map=new HashMap<>();
+        map.put("busList",busList);
+        return map;
+    }
+    @GetMapping("/busId1")
+    public Map<String,String> busId(@RequestParam(required = false)
+                                      String busRouteId) throws IOException{
+        String busId2=ApiExplorer.getbusRouteId(busRouteId);
+        System.out.println(busId2+"busId2");
+        Map<String,String> map=new HashMap<>();
+        map.put("busId3",busId2);
+        return map;
+    }
+}
+
+```
+
+</blockquote></details>
+
+<details><summary>ApiExplorer</summary><blockquote>
+
+```
+//버스노선검색
+    public static String getBusList(String strSrch) throws IOException {
+        
+        StringBuilder urlBuilder = new StringBuilder("http://ws.bus.go.kr/api/rest/busRouteInfo/getBusRouteList"); /*URL*/
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8")
+                + "=t6bf2Uyotp9m%2BEH4ZU6c9%2FJalIOtiZNFLovcCtx1og%2FtDmdgEjcQwwGhgHQKe5mI0z4ejLqllt0mqDaAmany3w%3D%3D"); /*Service Key*/
+        urlBuilder.append("&" + URLEncoder.encode("strSrch","UTF-8") + "=" + URLEncoder.encode(strSrch, "UTF-8")); /**/
+        urlBuilder.append("&resultType=json");
+
+        URL url = new URL(urlBuilder.toString());
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+        System.out.println("Response code: " + conn.getResponseCode());
+        BufferedReader rd;
+        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        System.out.println(sb.toString());
+        return sb.toString();
+    }
+    //버스노선검색
+    public static String getbusRouteId(String busRouteId) throws IOException {
+
+        StringBuilder urlBuilder = new StringBuilder("http://ws.bus.go.kr/api/rest/busRouteInfo/getStaionByRoute"); /*URL*/
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8")
+                + "=t6bf2Uyotp9m%2BEH4ZU6c9%2FJalIOtiZNFLovcCtx1og%2FtDmdgEjcQwwGhgHQKe5mI0z4ejLqllt0mqDaAmany3w%3D%3D"); /*Service Key*/
+        urlBuilder.append("&" + URLEncoder.encode("busRouteId","UTF-8") + "=" + URLEncoder.encode(busRouteId, "UTF-8")); /**/
+        urlBuilder.append("&resultType=json");
+
+        URL url = new URL(urlBuilder.toString());
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+        System.out.println("Response code: " + conn.getResponseCode());
+        BufferedReader rd;
+        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        System.out.println(sb.toString());
+        return sb.toString();
+    }
+}
+```
+
+</blockquote></details>
+
+<details><summary>View</summary><blockquote>
+
+<details><summary>Html</summary><blockquote>
+
+```
+<div class="bus">
+  <div class="bus-con">
+    <div class="bus-header">
+      <h1>공공데이터포털 버스 API</h1>
+      <input type="text" name="search" id="search" value="146">
+      <input type="button" value="버스노선검색" onclick="busSearch()">
+    </div>
+    <div class="bus-detail">
+      <table>
+        <thead>
+        <tr>
+          <th>노선명</th>
+          <th>노선유형</th>
+          <th>노선거점</th>
+          <th>노선종점</th>
+          <th>첫차시간</th>
+          <th>막차시간</th>
+          <th>배차간격</th>
+          <th>버스위치정보</th>
+          <th>버스타입</th>
+        </tr>
+        </thead>
+        <tbody id="bus1">
+
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+```
+
+</blockquote></details>
+
+<details><summary>Js(ajax)</summary><blockquote>
+
+```
+const busDetail=document.querySelector('.bus-detail')
+let tbodyTag=document.querySelector('#bus1');
+
+function busSearch(){
+  let html1="";
+  let search=document.querySelector('#search')
+  let strSrch=search.value;
+  console.log(strSrch +' < - strSearch2222 ')
+    let apiUrl= `/api/busList?strSrch=${strSrch}`;
+  console.log(apiUrl +' < - apiUrl ')
+     fetch(apiUrl)
+    .then(response => response.json())
+     .then(function (msg) { //아래부터는 html로 가져오기 위한 코드-->
+              console.log(msg)
+//                let jsonRs= JSON.parse(msg.rs);
+                let jsonRs= JSON.parse(msg.busList);
+               jsonRs.msgBody.itemList.forEach(el=>{
+                       html1 += "<tr>";
+                        html1+=`
+                                                <td>${el.busRouteNm}</td>
+                                                 <td>${el.routeType}</td>
+                                                 <td>${el.edStationNm}</td>
+                                                 <td>${el.stStationNm}</td>
+                                                 <td>${el.firstBusTm}</td>
+                                                 <td>${el.lastBusTm}</td>
+                                                 <td>${el.term}</td>
+                            <td onclick='stationPost(event.target.innerText)' style="background-color:#ffff00">${el.busRouteId}</td>
+                              <td>${el.routeType}</td>
+                        `;
+                         html1 += "</tr>";
+                  });
+                 // console.log(html1+" << ")
+                  tbodyTag.innerHTML=html1
+    });
+}
+(
+    ()=>{
+    busSearch()
+    }
+)();
+// 버스 정류장 조회
+//var url = 'https://cors-anywhere.herokuapp.com/http://ws.bus.go.kr/api/rest/busRouteInfo/geStaionByRoute?serviceKey=키값&busRouteId=버스ID&resultType=json'; /*URL*/
+let stationNmTag= document.querySelector('.stationNm');
+function stationPost(busId){
+  let html1="";
+  let type='busRouteInfo/getStaionByRoute?';
+//  let busRouteId=busId;     //<<위에 펑션 변수이름쓴거다
+//  let apiUrl=`${url}busRouteInfo/getStaionByRoute?serviceKey=${serviceKey}&busRouteId=${busRouteId}&resultType=json`;
+//let apiUrl= `/api/busId?busRouteId=${busRouteId}`;
+let apiUrl= `/api/busId1?busRouteId=${busId}`;   //${ ? }펑션변수이름
+ fetch(apiUrl)
+    .then(response => response.json())
+     .then(function (msg) { //아래부터는 html로 가져오기 위한 코드-->
+              console.log(msg+"  <<<")
+        let jsonRs= JSON.parse(msg.busId3);
+               jsonRs.msgBody.itemList.forEach(el=>{
+                    //   console.log(el);
+                    console.log(el.gpsX, el.gpsY,el.stationNm); // kakao map 표시
+                    html1+=`<div>${el.stationNm}</div>`;
+               })
+               stationNmTag.innerHTML=html1;
+                positionFn(jsonRs.msgBody.itemList);
+    });
+}
+function positionFn(dataVal) {
+     let positions = [];
+     let lat = 0;
+     let lng = 0;
+     dataVal.forEach((el, idx) => {
+       lat = el.gpsY;
+       lng = el.gpsX;
+       let result = {
+         title: el.stationNm,
+         latlng: new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng))
+       };
+       positions.push(result);
+     });
+     let mapContainer = document.getElementById('map'), // 지도를 표시할 div
+       mapOption = {
+         center: new kakao.maps.LatLng(dataVal[0].gpsY, dataVal[0].gpsX), // 지도의 중심좌표
+         level: 5 // 지도의 확대 레벨
+       };
+     // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+     let map = new kakao.maps.Map(mapContainer, mapOption);
+     // 주소-좌표 변환 객체를 생성합니다
+     let geocoder = new kakao.maps.services.Geocoder();
+     // 마커 이미지의 이미지 주소입니다
+     let imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+     for (let i = 0; i < dataVal.length; i++) {
+       // 마커 이미지의 이미지 크기 입니다
+       let imageSize = new kakao.maps.Size(24, 35);
+       // 마커 이미지를 생성합니다
+       let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+       // 마커를 생성합니다
+       let marker = new kakao.maps.Marker({
+         map: map, // 마커를 표시할 지도
+         position: positions[i].latlng, // 마커를 표시할 위치
+         title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+         image: markerImage // 마커 이미지
+       });
+     } //for
+     map.setCenter(positions[0].latlng); //기점 을 중심좌표
+   }
+```
+
+</blockquote></details>
+
+![image](https://user-images.githubusercontent.com/106312692/233932447-c58e19cf-2f85-43ac-9283-a077086bc5b4.png)
+
+
+</blockquote></details>
+
+</blockquote></details>
+
+</blockquote></details>
+
+
+ <hr>
+   
+   ## 후기
+   
+   3주간 진행된 두번째 프로젝트 입니다. 막막한 부분도 있었고 힘든 부분도 많았습니다.
+   
+   1차 프로젝트와 같은 팀원들과 맞춰보았던 합이 있어서 원할하게 프로젝트를 수행할 수 있었던것 같습니다.
+   
+   1차 프로젝트에서 제 역할을 완벽하게 구현하지 못했던 점들을 보강하여 완만한 결과물을 만들 수 있었던 것 같습니다.
+   
+   배울점도 많았고 , 아직 공부 해야할 부분이 많다는 점도 알게된거 같습니다.
+
+   1차 프로젝트 2차프로젝트에서 제가 해보지 못했던 포지션들을 공부하며 저만의 것으로 만들기 위해 노력 할 것입니다.
+
+   귀한시간 읽어주셔서 감사합니다.
